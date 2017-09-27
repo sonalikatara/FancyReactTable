@@ -25,16 +25,26 @@
     			},
 
     			getInitialState(){
-    				return {data: this.props.initialData};
+    				return {
+    					data: this.props.initialData,
+    					sortBy: null,
+    					descending: false,
+    				};
     			},
 
     			_sort: function(e){
     				var column = e.target.cellIndex; // cellIndex is a property defined as early as DOM level 1 and is the index of the cell in the row
     				var data = this.state.data.slice(); // or Array.from(this.state.data)
+    				var descending = this.state.sortBy === column && !this.state.descending;
     				data.sort(function(a,b){
-    					return a[column] > b[column] ? 1: -1;
+    					return descending ?
+    						(a[column] < b[column] ? 1: -1)
+    						: (a[column] > b[column] ? 1: -1);
     				});
-    				this.setState({data: data,});
+    				this.setState({data: data,
+    					sortBy: column,
+    					descending: descending,
+    				});
     			},
 
     			render: function(){
@@ -43,8 +53,11 @@
     							React.DOM.thead({onClick: this._sort},
     								React.DOM.tr(null,
     									this.props.headers.map(function(title,idx){
+    										if(this.state.sortBy == idx){
+    											title += this.state.descending ? ' \u2191' : ' \u2193';
+    										}
     										return React.DOM.th({key: idx}, title);
-    									})// end headers map
+    									}, this)// end thead map
     								)// end tr
     							),//end thead
     							React.DOM.tbody(null,
